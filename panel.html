@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Control Live 3D Pro</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #0b0c10; color: white; margin: 0; padding: 20px;
+            display: flex; justify-content: center; align-items: flex-start;
+            min-height: 100vh;
+        }
+        
+        .panel-app {
+            background: #1f2833; border-radius: 16px; padding: 25px; 
+            width: 100%; max-width: 500px; 
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid #45a29e;
+        }
+
+        .seccion {
+            background: #151b22; border-radius: 10px; padding: 15px; margin-bottom: 20px;
+            border: 1px solid #2b3440;
+        }
+
+        h3 { margin: 0 0 15px 0; font-size: 16px; color: #66fcf1; display: flex; align-items: center; gap: 8px; }
+        
+        .fila { display: flex; gap: 10px; flex-direction: column; }
+        .fila-horizontal { display: flex; gap: 10px; }
+
+        input[type="text"], select { 
+            padding: 12px; font-size: 14px; border-radius: 8px; border: 1px solid #3b4654; 
+            outline: none; background: #0b0c10; color: white; width: 100%; box-sizing: border-box;
+        }
+        
+        button { 
+            padding: 12px; background: #45a29e; color: #0b0c10; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; white-space: nowrap;
+        }
+        button:hover { background: #66fcf1; box-shadow: 0 0 15px rgba(102, 252, 241, 0.4); transform: translateY(-2px); }
+
+        .btn-lanzar { width: 100%; font-size: 18px; padding: 15px; margin-top: 5px; }
+
+        .btn-subir-imagen {
+            width: 100%; background: #0b0c10; color: #45a29e; border: 2px dashed #45a29e;
+            margin-top: 5px;
+        }
+        .btn-subir-imagen:hover { background: #1f2833; box-shadow: none; }
+
+        .paleta-emojis { 
+            display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; 
+            background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-top: 10px;
+        }
+        .btn-emoji { background: transparent; padding: 5px; font-size: 20px; border: none; cursor: pointer; transition: 0.2s;}
+        .btn-emoji:hover { transform: scale(1.3); }
+
+        .checkbox-container {
+            display: flex; align-items: center; gap: 8px; color: #66fcf1; font-size: 14px; 
+            font-weight: bold; cursor: pointer; padding: 10px; background: #0b0c10; 
+            border-radius: 8px; border: 1px solid #3b4654; justify-content: center;
+        }
+        .checkbox-container input { cursor: pointer; width: 16px; height: 16px; accent-color: #45a29e; }
+    </style>
+</head>
+<body>
+
+    <div class="panel-app">
+        
+        <div class="seccion">
+            <h3>📢 Banner de Avisos</h3>
+            <div class="fila">
+                <input type="text" id="textoAviso" placeholder="Ej: ¡Sigueme en mis redes!..." autocomplete="off">
+                <div class="fila-horizontal">
+                    <select id="estiloAviso">
+                        <option value="banner-cristal">1. Cristal Elegante (Glass)</option>
+                        <option value="banner-neon">2. Neón Brillante</option>
+                        <option value="banner-alerta">3. Alerta Roja (Parpadeo)</option>
+                        <option value="banner-dorado">4. Marco Dorado</option>
+                        <option value="banner-cyberpunk">5. Cyberpunk Amarillo</option>
+                        <option value="banner-minimalista">6. Minimalista (Sin fondo)</option>
+                        <option value="banner-holograma">7. Holograma Azul</option>
+                        <option value="banner-fuego">8. Fuego Infernal</option>
+                        <option value="banner-retro">9. Retro 80s (Letras de color)</option>
+                        <option value="banner-flotante">10. Píldora Flotante Blanca</option>
+                    </select>
+                    <button onclick="enviarAviso()">Actualizar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="seccion">
+            <h3>🎨 Fondo del Directo</h3>
+            <div class="fila">
+                <div class="fila-horizontal">
+                    <select id="selectFondo">
+                        <option value="fondo-cyber">1. Cyber Grid</option>
+                        <option value="fondo-matrix">2. Matrix Digital</option>
+                        <option value="fondo-synthwave">3. Synthwave Ocaso</option>
+                        <option value="fondo-oceano">4. Océano Fluido</option>
+                        <option value="fondo-lava">5. Lámpara de Lava</option>
+                        <option value="fondo-espacio">6. Espacio Estelar</option>
+                        <option value="fondo-gamer">7. RGB Gamer</option>
+                        <option value="fondo-oro">8. Polvo de Oro</option>
+                        <option value="fondo-alerta">9. Alerta Roja</option>
+                        <option value="fondo-oscuro">10. Oscuro Limpio</option>
+                    </select>
+                    <button onclick="cambiarFondo()">Aplicar</button>
+                </div>
+                
+                <input type="file" id="inputSubirFondo" accept="image/*" style="display: none;" onchange="procesarFondoPersonalizado(event)">
+                <button class="btn-subir-imagen" onclick="document.getElementById('inputSubirFondo').click()">
+                    📁 Subir mi propio fondo (Optimizado)
+                </button>
+            </div>
+        </div>
+
+        <div class="seccion" style="margin-bottom: 0;">
+            <h3>🚀 Lanzador de Nombres</h3>
+            <div class="fila">
+                <input type="text" id="nombreDonador" placeholder="Escribe el nombre del donador..." autocomplete="off">
+                
+                <div class="fila-horizontal">
+                    <select id="estiloTexto">
+                        <option value="estilo-oro">Oro 3D</option>
+                        <option value="estilo-candy-animado">Dulce Animado</option>
+                        <option value="estilo-arcoiris">Arcoíris Mágico</option>
+                        <option value="estilo-candy">Dulce Original</option>
+                        <option value="estilo-rojo-intenso">Rojo Intenso</option>
+                        <option value="estilo-verde-intenso">Verde Intenso</option>
+                        <option value="estilo-azul-intenso">Azul Intenso</option>
+                        <option value="estilo-neon">Neón</option>
+                        <option value="estilo-metal">Metal</option>
+                        <option value="estilo-cyberpunk">Cyberpunk</option>
+                        <option value="estilo-retro">Retro 80s</option>
+                        <option value="estilo-hielo">Hielo</option>
+                        <option value="estilo-fuego">Fuego</option>
+                        <option value="estilo-bosque">Bosque</option>
+                        <option value="estilo-galaxia">Galaxia</option>
+                        <option value="estilo-vampiro">Vampiro</option>
+                        <option value="estilo-fantasma">Fantasma</option>
+                        <option value="estilo-hacker">Hacker</option>
+                        <option value="estilo-burbuja">Burbuja</option>
+                        <option value="estilo-roca">Roca</option>
+                        <option value="estilo-veneno">Veneno</option>
+                        <option value="estilo-atardecer">Atardecer</option>
+                        <option value="estilo-diamante">Diamante</option>
+                        <option value="estilo-plasma">Plasma</option>
+                    </select>
+
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="checkMarcoPremium"> Marco Premium
+                    </label>
+                </div>
+
+                <button class="btn-lanzar" onclick="lanzarNombre()">¡LANZAR NOMBRE!</button>
+                
+                <div class="paleta-emojis">
+                    <button class="btn-emoji" onclick="agregarEmoji('🚀')">🚀</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('🔥')">🔥</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('💰')">💰</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('💎')">💎</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('🎉')">🎉</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('👑')">👑</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('⭐')">⭐</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('💀')">💀</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('👽')">👽</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('❤️')">❤️</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('😎')">😎</button>
+                    <button class="btn-emoji" onclick="agregarEmoji('🎮')">🎮</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const canal = new BroadcastChannel('live_overlay');
+        const inputNombre = document.getElementById('nombreDonador');
+
+        function agregarEmoji(emoji) {
+            inputNombre.value += emoji;
+            inputNombre.focus();
+        }
+
+        inputNombre.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') lanzarNombre();
+        });
+
+        document.getElementById('textoAviso').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') enviarAviso();
+        });
+
+        function enviarAviso() {
+            const texto = document.getElementById('textoAviso').value.trim();
+            const estilo = document.getElementById('estiloAviso').value;
+            canal.postMessage({ tipo: 'aviso', contenido: texto, estilo: estilo });
+        }
+
+        function cambiarFondo() {
+            const fondo = document.getElementById('selectFondo').value;
+            canal.postMessage({ tipo: 'fondo_predeterminado', clase: fondo });
+        }
+
+        // --- NUEVO MOTOR DE COMPRESIÓN DE IMÁGENES ---
+        function procesarFondoPersonalizado(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const lector = new FileReader();
+            lector.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Creamos un lienzo en la memoria para comprimir
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Limitamos el tamaño máximo a 1080p (resolución estándar de streaming)
+                    const MAX_WIDTH = 1920;
+                    const MAX_HEIGHT = 1080;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+                        const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
+                        width = width * ratio;
+                        height = height * ratio;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    // Dibujamos la imagen redimensionada
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Convertimos a JPEG con un 80% de calidad para aligerar la carga
+                    const imagenOptimizada = canvas.toDataURL('image/jpeg', 0.8);
+                    
+                    // Enviamos la imagen ultraligera a OBS
+                    canal.postMessage({ tipo: 'fondo_personalizado', imagen: imagenOptimizada });
+                };
+                img.src = e.target.result;
+            };
+            lector.readAsDataURL(file);
+        }
+
+        function lanzarNombre() {
+            const textoCrudo = inputNombre.value.trim();
+            if (textoCrudo === '') return;
+
+            const estilo = document.getElementById('estiloTexto').value;
+            const marco = document.getElementById('checkMarcoPremium').checked;
+
+            canal.postMessage({ 
+                tipo: 'nombre', 
+                texto: textoCrudo, 
+                estilo: estilo, 
+                marco: marco 
+            });
+
+            inputNombre.value = '';
+            inputNombre.focus();
+        }
+    </script>
+</body>
+</html>

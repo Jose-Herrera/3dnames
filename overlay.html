@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas Live 3D</title>
+    <style>
+        body { margin: 0; overflow: hidden; width: 100vw; height: 100vh; transition: background 0.5s ease; }
+
+        /* --- FONDOS PREDETERMINADOS --- */
+        .fondo-cyber { background-color: #0d0e15; background-image: linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px); background-size: 50px 50px; animation: moverGrid 20s linear infinite; }
+        .fondo-matrix { background: linear-gradient(180deg, #001a00, #003300); background-image: repeating-linear-gradient(0deg, transparent, rgba(0, 255, 0, 0.1) 2px, transparent 4px); animation: moverLluvia 10s linear infinite; }
+        .fondo-synthwave { background: linear-gradient(180deg, #2b0033, #000033 50%, #ff0055 50%, #1a0033); background-size: 100% 200%; animation: moverOcaso 15s ease-in-out infinite alternate; }
+        .fondo-oceano { background: linear-gradient(45deg, #001f3f, #0074D9, #7FDBFF); background-size: 400% 400%; animation: gradienteFluido 15s ease infinite; }
+        .fondo-lava { background: linear-gradient(45deg, #8b0000, #ff4500, #ff8c00); background-size: 400% 400%; animation: gradienteFluido 10s ease infinite; }
+        .fondo-espacio { background-color: #000; background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 30px 30px; animation: parpadeoEstelar 4s infinite alternate; }
+        .fondo-gamer { background: linear-gradient(90deg, #ff0000, #00ff00, #0000ff, #ff00ff, #ff0000); background-size: 400% 100%; animation: RGBFlow 8s linear infinite; }
+        .fondo-oro { background: radial-gradient(circle at center, #332200, #1a1100, #000); animation: pulsoOro 5s infinite alternate; }
+        .fondo-alerta { background: linear-gradient(45deg, #1a0000, #4d0000); box-shadow: inset 0 0 100px rgba(255,0,0,0.5); animation: alarmaRoja 2s infinite alternate; }
+        .fondo-oscuro { background: radial-gradient(circle, #1a1c29, #0d0e15); }
+
+        /* --- CLASE PARA FONDO PERSONALIZADO --- */
+        .fondo-personalizado {
+            background-color: #000;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            animation: none !important; /* Apaga las animaciones de los fondos predeterminados */
+        }
+
+        @keyframes moverGrid { to { background-position: 50px 50px; } }
+        @keyframes gradienteFluido { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes RGBFlow { to { background-position: 400% 0; } }
+        @keyframes moverLluvia { to { background-position: 0 1000px; } }
+        @keyframes moverOcaso { to { background-position: 0% 100%; } }
+        @keyframes parpadeoEstelar { to { opacity: 0.6; } }
+        @keyframes pulsoOro { to { background-size: 120% 120%; } }
+        @keyframes alarmaRoja { to { box-shadow: inset 0 0 200px rgba(255,0,0,0.8); } }
+
+        /* --- BANNER DE AVISOS --- */
+        #banner-aviso {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; display: none; white-space: nowrap; transition: 0.3s;
+            font-family: 'Impact', 'Arial Black', sans-serif; text-transform: uppercase; letter-spacing: 2px;
+        }
+        .animar-aviso { animation: popBanner 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popBanner { 0% { transform: translateX(-50%) scale(0.8); opacity: 0; } 100% { transform: translateX(-50%) scale(1); opacity: 1; } }
+
+        /* 10 Estilos de Banner */
+        .banner-cristal { background: rgba(10, 15, 30, 0.6); backdrop-filter: blur(10px); border: 2px solid rgba(0, 255, 255, 0.4); border-radius: 15px; padding: 15px 40px; color: #fff; font-size: 38px; text-shadow: 0 0 10px rgba(0, 255, 255, 0.8); box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2); }
+        .banner-neon { background: transparent; border: 4px solid #ff00ff; border-radius: 10px; padding: 10px 35px; color: #fff; font-size: 40px; text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff; box-shadow: 0 0 15px #ff00ff, inset 0 0 15px #ff00ff; }
+        .banner-alerta { background: #ff0000; border: 4px dashed #fff; border-radius: 10px; padding: 10px 35px; color: #fff; font-size: 40px; text-shadow: 2px 2px 0 #000; animation: parpadeoAlerta 1s infinite alternate; }
+        @keyframes parpadeoAlerta { from { opacity: 1; box-shadow: 0 0 15px #ff0000; } to { opacity: 0.8; box-shadow: 0 0 40px #ff0000; } }
+        .banner-dorado { background: linear-gradient(to bottom, #2a2000, #110d00); border: 2px solid #ffd700; border-radius: 8px; padding: 12px 40px; color: #ffd700; font-size: 38px; text-shadow: 0 2px 4px #000; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        .banner-cyberpunk { background: #fcee0a; border: 3px solid #000; border-right: 15px solid #00ffff; padding: 10px 35px; color: #000; font-size: 42px; box-shadow: 6px 6px 0 #ff003c; }
+        .banner-minimalista { background: transparent; border: none; padding: 10px 25px; color: #fff; font-size: 36px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); border-bottom: 4px solid #fff; }
+        .banner-holograma { background: rgba(0, 255, 255, 0.1); border-top: 2px solid #00ffff; border-bottom: 2px solid #00ffff; padding: 15px 40px; color: #00ffff; font-size: 38px; text-shadow: 0 0 5px #00ffff; background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.2) 2px, rgba(0,255,255,0.2) 4px); }
+        .banner-fuego { background: rgba(0,0,0,0.8); border: 2px solid #ff4500; border-radius: 10px; padding: 15px 35px; color: #ffeb3b; font-size: 40px; text-shadow: 0 -2px 4px #ff4500, 0 -4px 10px #ff0000; box-shadow: 0 0 15px #ff4500; }
+        .banner-retro { background: linear-gradient(180deg, #ff00ff, #00ffff); -webkit-background-clip: text; color: transparent; font-size: 45px; filter: drop-shadow(2px 2px 0px #000); border-top: 4px solid #ff00ff; border-bottom: 4px solid #00ffff; padding: 5px 30px; }
+        .banner-flotante { background: #fff; border-radius: 50px; padding: 10px 40px; color: #000; font-size: 35px; box-shadow: 0 20px 30px rgba(0,0,0,0.5); font-family: 'Arial Black', sans-serif; border: 2px solid #ddd; }
+
+
+        /* --- PIZARRA Y NOMBRES 3D --- */
+        #pizarra { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        .contenedor-nombre { position: absolute; white-space: nowrap; z-index: 50; transition: opacity 0.3s ease; }
+        .fade-out { animation: popOut 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards !important; }
+
+        .texto-3d { font-family: 'Impact', 'Arial Black', sans-serif; font-size: 64px; text-transform: uppercase; letter-spacing: 2px; display: inline-block; white-space: nowrap; }
+        .emoji-reducido { font-size: 60%; vertical-align: middle; margin: 0 5px; }
+
+        .con-marco-premium { padding: 4px 20px; position: relative; }
+        .con-marco-premium::before { content: ''; position: absolute; inset: 0; border-radius: 20px; padding: 6px; background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853, #4285F4, #EA4335); background-size: 200% 100%; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; animation: aparecerGoogle 0.5s forwards 1s, girarBordeGoogle 2.5s linear infinite; }
+
+        /* Estilos de Textos */
+        .estilo-oro { color: #ffd700; text-shadow: 0px 1px 0 #b8860b, 0px 4px 0 #8b6508, 0px 8px 0 #8b6508, 0 15px 20px rgba(0,0,0,0.8); }
+        .estilo-candy { color: #ff69b4; text-shadow: 2px 2px 0 #00ffff, 4px 4px 0 #ffd700; }
+        .estilo-candy-animado { color: #ff69b4; text-shadow: 2px 2px 0 #00ffff, 4px 4px 0 #ffd700; position: relative; }
+        .estilo-candy-animado::after { content: ''; position: absolute; bottom: -5px; left: 50%; width: 0; height: 4px; background: #ffd700; box-shadow: 0 0 10px #ffd700; border-radius: 2px; transform: translateX(-50%); animation: expandirCaramelo 0.8s ease-out 1s forwards; }
+        .estilo-arcoiris { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: fluirArcoiris 3s linear infinite; filter: drop-shadow(2px 2px 0px #000) drop-shadow(0 0 15px rgba(255,255,255,0.4)); }
+        .estilo-rojo-intenso { color: #ff1a1a; text-shadow: 2px 2px 0 #00ffff, 4px 4px 0 #ffea00; }
+        .estilo-verde-intenso { color: #00ff00; text-shadow: 2px 2px 0 #ff00ff, 4px 4px 0 #00ffff; }
+        .estilo-azul-intenso { color: #0088ff; text-shadow: 2px 2px 0 #ff00ff, 4px 4px 0 #33ff33; }
+        .estilo-neon { color: #fff; text-shadow: 0 0 5px #fff, 0 0 20px #0ff, 0 0 40px #0ff, 0 0 60px #0ff; }
+        .estilo-metal { color: #e0e0e0; text-shadow: 1px 1px 0 #999, 4px 4px 0 #666, 8px 8px 0 #222, 10px 10px 15px rgba(0,0,0,0.9); }
+        .estilo-cyberpunk { color: #fcee0a; text-shadow: 3px 3px 0 #00ffff, -3px -3px 0 #ff003c; }
+        .estilo-retro { color: #ff00ff; text-shadow: 0 0 5px #ff00ff, 2px 2px 0 #00ffff, 4px 4px 0 #0000ff; }
+        .estilo-hielo { color: #e0ffff; text-shadow: 0 0 10px #fff, 0 5px 0 #87ceeb, 0 10px 0 #4682b4; }
+        .estilo-fuego { color: #ffeb3b; text-shadow: 0 -2px 5px #ffeb3b, 0 -5px 10px #ff9800, 0 -10px 20px #f44336; }
+        .estilo-bosque { color: #90ee90; text-shadow: 0 2px 0 #3cb371, 0 5px 0 #228b22, 0 8px 0 #006400; }
+        .estilo-galaxia { color: #fff; text-shadow: 0 0 10px #fff, 3px 3px 20px #8a2be2, -3px -3px 20px #00008b; }
+        .estilo-vampiro { color: #ff0000; text-shadow: 2px 2px 0 #550000, 4px 4px 0 #220000, 6px 6px 0 #000; }
+        .estilo-fantasma { color: rgba(255,255,255,0.8); text-shadow: 0 0 15px rgba(255,255,255,0.6), 0 0 30px rgba(173,216,230,0.5); }
+        .estilo-hacker { color: #0f0; text-shadow: 2px 2px 0 #000, 4px 4px 0 #000, 6px 6px 0 #000; }
+        .estilo-burbuja { color: #ffb6c1; text-shadow: -2px -2px 0 #fff, 2px 2px 5px rgba(0,0,0,0.3); }
+        .estilo-roca { color: #808080; text-shadow: 0 1px 0 #696969, 0 3px 0 #555, 0 5px 0 #444, 0 7px 0 #333; }
+        .estilo-veneno { color: #adff2f; text-shadow: 0 0 10px #adff2f, 3px 3px 0 #800080, 6px 6px 0 #4b0082; }
+        .estilo-atardecer { color: #ffd700; text-shadow: 0 2px 0 #ffa500, 0 4px 0 #ff4500, 0 6px 0 #800080; }
+        .estilo-diamante { color: #e0ffff; text-shadow: -1px -1px 0 #fff, 2px 2px 0 #00ced1, 4px 4px 0 #1e90ff; }
+        .estilo-plasma { color: #fff; text-shadow: 2px 2px 10px #f0f, -2px -2px 10px #0ff; }
+
+        @keyframes aparecerGoogle { to { opacity: 1; } }
+        @keyframes girarBordeGoogle { to { background-position: 200% 0; } }
+        @keyframes expandirCaramelo { to { width: 100%; } }
+        @keyframes fluirArcoiris { to { background-position: 200% center; } }
+        @keyframes popInBounce { 0% { transform: scale(0) translateY(50px) rotate(25deg); opacity: 0; filter: blur(8px); } 50% { transform: scale(1.2) translateY(-15px) rotate(-10deg); opacity: 1; filter: blur(0px); } 75% { transform: scale(0.9) translateY(5px) rotate(5deg); opacity: 1; } 100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; filter: blur(0px); } }
+        @keyframes popOut { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0) rotate(-20deg); opacity: 0; } }
+        @keyframes flotarDinamico { 0% { transform: translate(0px, 0px) rotate(0deg); } 33% { transform: translate(-15px, -22px) rotate(-3.5deg); } 66% { transform: translate(11px, -33px) rotate(2.5deg); } 100% { transform: translate(-3px, -15px) rotate(-1deg); } }
+    </style>
+</head>
+<body class="fondo-cyber">
+
+    <div id="banner-aviso" class="banner-cristal"></div>
+    <div id="pizarra"></div>
+
+    <script>
+        const canal = new BroadcastChannel('live_overlay');
+        const pizarra = document.getElementById('pizarra');
+        const bannerAviso = document.getElementById('banner-aviso');
+        let espaciosOcupados = [];
+
+        const regexEmoji = /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g;
+
+        canal.onmessage = (evento) => {
+            const data = evento.data;
+            if (data.tipo === 'aviso') {
+                actualizarAviso(data.contenido, data.estilo);
+            } 
+            else if (data.tipo === 'fondo_predeterminado') {
+                document.body.className = data.clase;
+                document.body.style.backgroundImage = ''; // Limpia fondo custom si lo había
+            } 
+            else if (data.tipo === 'fondo_personalizado') {
+                document.body.className = 'fondo-personalizado';
+                document.body.style.backgroundImage = `url(${data.imagen})`;
+            }
+            else if (data.tipo === 'nombre') {
+                procesarNombre(data.texto, data.estilo, data.marco);
+            }
+        };
+
+        function actualizarAviso(texto, estilo) {
+            if (texto === '') {
+                bannerAviso.style.display = 'none';
+            } else {
+                bannerAviso.innerText = texto;
+                bannerAviso.className = estilo;
+                bannerAviso.style.display = 'block';
+                
+                bannerAviso.classList.remove('animar-aviso');
+                void bannerAviso.offsetWidth; 
+                bannerAviso.classList.add('animar-aviso');
+            }
+        }
+
+        function procesarNombre(textoCrudo, estilo, aplicarMarco) {
+            const trackingId = 'donador-' + Date.now();
+            const contenedor = document.createElement('div');
+            contenedor.className = 'contenedor-nombre';
+            contenedor.id = trackingId;
+            
+            const texto = document.createElement('div');
+            texto.className = `texto-3d ${estilo} ${aplicarMarco ? 'con-marco-premium' : ''}`;
+            
+            const htmlProcesado = textoCrudo.replace(regexEmoji, '<span class="emoji-reducido">$1</span>');
+            texto.innerHTML = htmlProcesado;
+
+            contenedor.appendChild(texto);
+            contenedor.style.left = '-9999px';
+            contenedor.style.top = '-9999px';
+            contenedor.style.visibility = 'hidden';
+            pizarra.appendChild(contenedor);
+
+            const w = contenedor.offsetWidth + 40; 
+            const h = contenedor.offsetHeight + 40;
+
+            const margenSeguridad = 10; 
+            const minX = margenSeguridad;
+            const maxX = Math.max(minX, window.innerWidth - w - margenSeguridad);
+            const minY = 120; 
+            const maxY = Math.max(minY, window.innerHeight - h - margenSeguridad);
+
+            let x, y;
+            let colocado = false;
+            let intentosGlobales = 0;
+
+            while (!colocado && intentosGlobales < 10) {
+                for (let i = 0; i < 300; i++) {
+                    let tempX = Math.random() * (maxX - minX) + minX;
+                    let tempY = Math.random() * (maxY - minY) + minY;
+                    let colision = false;
+
+                    for (let ocupado of espaciosOcupados) {
+                        if (tempX < ocupado.right && tempX + w > ocupado.left && tempY < ocupado.bottom && tempY + h > ocupado.top) { 
+                            colision = true; break; 
+                        }
+                    }
+                    if (!colision) { x = tempX; y = tempY; colocado = true; break; }
+                }
+
+                if (!colocado) {
+                    for (let scanY = minY; scanY <= maxY; scanY += 20) {
+                        for (let scanX = minX; scanX <= maxX; scanX += 20) {
+                            let colisionGrid = false;
+                            for (let ocupado of espaciosOcupados) {
+                                if (scanX < ocupado.right && scanX + w > ocupado.left && scanY < ocupado.bottom && scanY + h > ocupado.top) {
+                                    colisionGrid = true; break;
+                                }
+                            }
+                            if (!colisionGrid) { x = scanX; y = scanY; colocado = true; break; }
+                        }
+                        if (colocado) break;
+                    }
+                }
+
+                if (!colocado) {
+                    if (espaciosOcupados.length > 0) {
+                        const masViejo = espaciosOcupados.shift(); 
+                        const elementoViejo = document.getElementById(masViejo.id);
+                        if (elementoViejo) elementoViejo.remove();
+                    } else { colocado = true; x = minX; y = minY; }
+                }
+                intentosGlobales++;
+            }
+
+            contenedor.style.left = `${x}px`;
+            contenedor.style.top = `${y}px`;
+            contenedor.style.visibility = 'visible';
+            
+            const duracionFlote = (Math.random() * 3 + 4).toFixed(1); 
+            contenedor.style.animation = `popInBounce 1s cubic-bezier(0.25, 1, 0.5, 1) forwards, flotarDinamico ${duracionFlote}s ease-in-out 1s infinite alternate`;
+
+            espaciosOcupados.push({ id: trackingId, left: x, right: x + w, top: y, bottom: y + h });
+
+            setTimeout(() => {
+                const elemento = document.getElementById(trackingId);
+                if (elemento) {
+                    elemento.style.animation = 'none'; 
+                    void elemento.offsetWidth; 
+                    elemento.classList.add('fade-out');
+                    espaciosOcupados = espaciosOcupados.filter(c => c.id !== trackingId);
+                    setTimeout(() => { elemento.remove(); }, 800);
+                }
+            }, 60000); 
+        }
+    </script>
+</body>
+</html>
